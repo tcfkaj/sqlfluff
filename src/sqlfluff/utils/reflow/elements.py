@@ -699,6 +699,7 @@ class ReflowPoint(ReflowElement):
         anchor_on: str = "before",
         indent_unit: str = "space",
         tab_space_size: int = 4,
+        prev_point: Optional["ReflowPoint"] = None,
     ) -> tuple[list[LintResult], "ReflowPoint"]:
         """Respace a point based on given constraints.
 
@@ -713,11 +714,17 @@ class ReflowPoint(ReflowElement):
         however it exists as a convenience for rules which wish to use it.
         """
         existing_results = lint_results[:]
-        # Check if the prev_block is configured for leading position
-        # (used to apply leading_spacing_after override).
+        # Check if the prev_block is *actually* in leading position.
+        # It must be configured for leading AND preceded by a newline
+        # (i.e. truly at the start of a line). Without the newline check,
+        # inline commas (e.g. in function args) would incorrectly get
+        # leading_spacing_after applied.
         _prev_is_leading = bool(
             prev_block
             and getattr(prev_block, "line_position", None) == "leading"
+            and getattr(prev_block, "leading_spacing_after", None)
+            and prev_point is not None
+            and any(seg.is_type("newline") for seg in prev_point.segments)
         )
         pre_constraint, post_constraint, strip_newlines = determine_constraints(
             prev_block, next_block, strip_newlines,
