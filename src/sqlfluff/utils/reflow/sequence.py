@@ -466,17 +466,27 @@ class ReflowSequence:
 
     def _iter_points_with_constraints(
         self,
-    ) -> Iterator[tuple[ReflowPoint, Optional[ReflowBlock], Optional[ReflowBlock]]]:
+    ) -> Iterator[
+        tuple[
+            ReflowPoint,
+            Optional[ReflowBlock],
+            Optional[ReflowBlock],
+            Optional[ReflowPoint],
+        ]
+    ]:
         for idx, elem in enumerate(self.elements):
             # Only evaluate points.
             if isinstance(elem, ReflowPoint):
                 pre = None
                 post = None
+                prev_point = None
                 if idx > 0:
                     pre = cast(ReflowBlock, self.elements[idx - 1])
+                if idx > 1:
+                    prev_point = cast(ReflowPoint, self.elements[idx - 2])
                 if idx < len(self.elements) - 1:
                     post = cast(ReflowBlock, self.elements[idx + 1])
-                yield elem, pre, post
+                yield elem, pre, post, prev_point
 
     def respace(
         self, strip_newlines: bool = False, filter: str = "all"
@@ -509,7 +519,7 @@ class ReflowSequence:
         # Use the embodied fixes as a starting point.
         lint_results = self.get_results()
         new_elements: ReflowSequenceType = []
-        for point, pre, post in self._iter_points_with_constraints():
+        for point, pre, post, prev_pt in self._iter_points_with_constraints():
             # We filter on the elements POST RESPACE. This is to allow
             # strict respacing to reclaim newlines.
             new_lint_results, new_point = point.respace_point(
@@ -517,6 +527,7 @@ class ReflowSequence:
                 next_block=post,
                 root_segment=self.root_segment,
                 lint_results=lint_results,
+                prev_point=prev_pt,
                 strip_newlines=strip_newlines,
                 indent_unit=self.reflow_config.indent_unit,
                 tab_space_size=self.reflow_config.tab_space_size,
