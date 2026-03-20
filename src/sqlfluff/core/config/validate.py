@@ -9,6 +9,7 @@ ALLOWABLE_LAYOUT_CONFIG_KEYS = (
     "spacing_after",
     "spacing_within",
     "line_position",
+    "leading_spacing_after",
     "align_within",
     "align_scope",
     "keyword_line_position",

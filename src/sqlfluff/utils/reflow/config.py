@@ -21,6 +21,7 @@ class BlockConfig:
     spacing_after: str = "single"
     spacing_within: Optional[str] = None
     line_position: Optional[str] = None
+    leading_spacing_after: Optional[str] = None
     keyword_line_position: Optional[str] = None
     keyword_line_position_exclusions: Union[str, list[str], None] = None
 
@@ -30,6 +31,7 @@ class BlockConfig:
         after: Optional[str] = None,
         within: Optional[str] = None,
         line_position: Optional[str] = None,
+        leading_spacing_after: Optional[str] = None,
         config: Optional[ConfigElementType] = None,
         keyword_line_position: Optional[str] = None,
         keyword_line_position_exclusions: Union[str, list[str], None] = None,
@@ -47,6 +49,11 @@ class BlockConfig:
         )
         self.line_position = (
             line_position or config.get("line_position", None) or self.line_position
+        )
+        self.leading_spacing_after = (
+            leading_spacing_after
+            or config.get("leading_spacing_after", None)
+            or self.leading_spacing_after
         )
         self.keyword_line_position = (
             keyword_line_position
