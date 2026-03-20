@@ -386,3 +386,86 @@ trailing_comma_strict_tsql_exec:
       type:
         comma:
           line_position: trailing:strict
+
+# --- leading_spacing_after tests ---
+
+leading_comma_touch_spacing_select:
+  # Leading comma with touch spacing — no space after comma in SELECT
+  pass_str: |
+    SELECT
+        a
+        ,b
+        ,c
+    FROM t
+  configs:
+    layout:
+      type:
+        comma:
+          line_position: leading
+          leading_spacing_after: touch
+
+leading_comma_touch_spacing_preserves_function_args:
+  # Function arg commas stay inline with normal spacing
+  pass_str: |
+    SELECT
+        a
+        ,coalesce(a, b)
+        ,round(x, 2)
+    FROM t
+  configs:
+    layout:
+      type:
+        comma:
+          line_position: leading
+          leading_spacing_after: touch
+
+leading_comma_touch_spacing_fix:
+  # Trailing commas should be fixed to leading + touch
+  fail_str: |
+    SELECT
+        a,
+        b,
+        c
+    FROM t
+  fix_str: |
+    SELECT
+        a
+        ,b
+        ,c
+    FROM t
+  configs:
+    layout:
+      type:
+        comma:
+          line_position: leading
+          leading_spacing_after: touch
+
+leading_comma_touch_spacing_group_by:
+  # GROUP BY also gets touch spacing
+  pass_str: |
+    SELECT
+        a
+        ,b
+    FROM t
+    GROUP BY
+        a
+        ,b
+  configs:
+    layout:
+      type:
+        comma:
+          line_position: leading
+          leading_spacing_after: touch
+
+leading_comma_default_spacing_unchanged:
+  # Without leading_spacing_after, leading commas keep space (existing behavior)
+  pass_str: |
+    SELECT
+        a
+        , b
+    FROM t
+  configs:
+    layout:
+      type:
+        comma:
+          line_position: leading

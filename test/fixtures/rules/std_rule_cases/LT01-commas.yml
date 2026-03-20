@@ -51,3 +51,26 @@ test_fail_no_whitespace_after_comma_2:
 
 test_pass_bigquery_trailing_comma:
   pass_str: SELECT 1, 2,
+
+# --- leading_spacing_after tests ---
+
+leading_comma_touch_spacing_removes_existing_space:
+  # Leading comma with space should be fixed to touch
+  fail_str: |
+    SELECT
+        a
+        , b
+        , c
+    FROM t
+  fix_str: |
+    SELECT
+        a
+        ,b
+        ,c
+    FROM t
+  configs:
+    layout:
+      type:
+        comma:
+          line_position: leading
+          leading_spacing_after: touch

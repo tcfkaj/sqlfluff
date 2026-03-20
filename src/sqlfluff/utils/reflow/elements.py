@@ -146,6 +146,9 @@ class ReflowBlock(ReflowElement):
     #: Desired line position for this block.
     #: See :ref:`layoutspacingconfig`
     line_position: Optional[str]
+    #: Desired spacing after this block when in leading position.
+    #: Overrides ``spacing_after`` when the block is positioned as leading.
+    leading_spacing_after: Optional[str]
     #: Metadata on the depth of this segment within the parse tree
     #: which is used in inferring how and where line breaks should
     #: exist.
@@ -212,6 +215,7 @@ class ReflowBlock(ReflowElement):
             spacing_before=block_config.spacing_before,
             spacing_after=block_config.spacing_after,
             line_position=block_config.line_position,
+            leading_spacing_after=block_config.leading_spacing_after,
             depth_info=depth_info,
             stack_spacing_configs=stack_spacing_configs,
             line_position_configs=line_position_configs,
@@ -709,8 +713,15 @@ class ReflowPoint(ReflowElement):
         however it exists as a convenience for rules which wish to use it.
         """
         existing_results = lint_results[:]
+        # Check if the prev_block is configured for leading position
+        # (used to apply leading_spacing_after override).
+        _prev_is_leading = bool(
+            prev_block
+            and getattr(prev_block, "line_position", None) == "leading"
+        )
         pre_constraint, post_constraint, strip_newlines = determine_constraints(
-            prev_block, next_block, strip_newlines
+            prev_block, next_block, strip_newlines,
+            prev_block_is_leading=_prev_is_leading,
         )
 
         reflow_logger.debug("* Respacing: %r @ %s", self.raw, self.pos_marker)

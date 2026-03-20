@@ -1,7 +1,7 @@
 """Static methods to support ReflowSequence.rebreak()."""
 
 import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, replace as dataclass_replace
 from typing import cast
 
 from sqlfluff.core.parser import BaseSegment, RawSegment
@@ -461,6 +461,22 @@ def rebreak_sequence(
                 new_results, prev_point = prev_point.indent_to(
                     next_point.get_indent() or "", before=loc.target
                 )
+
+                # If the target has leading_spacing_after configured,
+                # override spacing_after so the respace uses it.
+                target_block = cast(
+                    ReflowBlock, elem_buff[loc.next.adj_pt_idx - 1]
+                )
+                if (
+                    getattr(target_block, "leading_spacing_after", None)
+                    and target_block.leading_spacing_after
+                ):
+                    target_block = dataclass_replace(
+                        target_block,
+                        spacing_after=target_block.leading_spacing_after,
+                    )
+                    elem_buff[loc.next.adj_pt_idx - 1] = target_block
+
                 new_results, next_point = next_point.respace_point(
                     cast(ReflowBlock, elem_buff[loc.next.adj_pt_idx - 1]),
                     cast(ReflowBlock, elem_buff[loc.next.adj_pt_idx + 1]),
@@ -491,6 +507,22 @@ def rebreak_sequence(
                     # We always reinsert after the first point, but respace
                     # the inserted point to ensure it's the right size given
                     # configs.
+
+                    # If the target has leading_spacing_after configured,
+                    # override spacing_after so the respace uses it.
+                    tricky_target = cast(
+                        ReflowBlock, elem_buff[loc.next.adj_pt_idx - 1]
+                    )
+                    if (
+                        getattr(tricky_target, "leading_spacing_after", None)
+                        and tricky_target.leading_spacing_after
+                    ):
+                        tricky_target = dataclass_replace(
+                            tricky_target,
+                            spacing_after=tricky_target.leading_spacing_after,
+                        )
+                        elem_buff[loc.next.adj_pt_idx - 1] = tricky_target
+
                     new_results, new_point = ReflowPoint(()).respace_point(
                         cast(ReflowBlock, elem_buff[loc.next.adj_pt_idx - 1]),
                         cast(ReflowBlock, elem_buff[loc.next.pre_code_pt_idx + 1]),

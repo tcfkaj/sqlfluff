@@ -161,11 +161,22 @@ def determine_constraints(
     prev_block: Optional["ReflowBlock"],
     next_block: Optional["ReflowBlock"],
     strip_newlines: bool = False,
+    prev_block_is_leading: bool = False,
 ) -> tuple[str, str, bool]:
     """Given the surrounding blocks, determine appropriate constraints."""
     # Start with the defaults.
+    # If the prev_block has leading_spacing_after configured and is in
+    # leading position, use that instead of the normal spacing_after.
+    if (
+        prev_block
+        and prev_block_is_leading
+        and getattr(prev_block, "leading_spacing_after", None)
+    ):
+        effective_spacing_after = prev_block.leading_spacing_after
+    else:
+        effective_spacing_after = prev_block.spacing_after if prev_block else "single"
     pre_constraint, strip_newlines = _unpack_constraint(
-        prev_block.spacing_after if prev_block else "single", strip_newlines
+        effective_spacing_after, strip_newlines
     )
     post_constraint, strip_newlines = _unpack_constraint(
         next_block.spacing_before if next_block else "single", strip_newlines
